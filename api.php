@@ -8,23 +8,20 @@ require_once('lib/mysql.php');
 $error = 0;
 
 $URI = $_SERVER['REQUEST_URI'];
-if(strpos($URI,'?') !== false)
-{
-    $URI = explode('?',$URI)[0];
+if (strpos($URI, '?') !== false) {
+    $URI = explode('?', $URI)[0];
 }
-$URI = trim(explode('/api/',$URI)[1]);
+$URI = trim(explode('/api/', $URI)[1]);
 
-if(($error = ($URI != '') ? $error : $error +1) == 0);
-{
-    $URI = explode('/',$URI);
+if (($error = ($URI != '') ? $error : $error + 1) == 0); {
+    $URI = explode('/', $URI);
 
     $context = (isset($URI[0])) ? $URI[0] : '';
 
-    $error = ($context != '') ? $error : $error +2;
+    $error = ($context != '') ? $error : $error + 2;
 }
 
-if($error == 0)
-{
+if ($error == 0) {
     $db = new DB();
 
     $error2 = 0;
@@ -32,20 +29,16 @@ if($error == 0)
     // === CONNEXION ======================================
 
     // --- connexion - check ------------------------------
-    if($context == "connexion")
-    {
+    if ($context == "connexion") {
         $cmd = (isset($URI[1])) ? $URI[1] : '';
-        if(($error2 = ($cmd == 'verification') ? 0 : 1) == 0)
-        {
-            $_POST['identifiant'] = 'leng' ;
-            $_POST['mot_de_passe'] = '1234' ;
+        if (($error2 = ($cmd == 'verification') ? 0 : 1) == 0) {
+            $_POST['identifiant'] = 'leng';
+            $_POST['mot_de_passe'] = '1234';
 
-            if(($error2 = (isset($_POST['identifiant']) && isset($_POST['mot_de_passe'])) ? 0 : 1) == 0)
-            {  
+            if (($error2 = (isset($_POST['identifiant']) && isset($_POST['mot_de_passe'])) ? 0 : 1) == 0) {
                 $SQL = "SELECT `id`,`prenom`,`nom` FROM `utilisateurs` WHERE `identifiant`=? AND `mot_de_passe`=? LIMIT 0,1;";
                 $record = $db->SQL($SQL, $_POST);
-                if(($error2 = (count($record) == 1) ? $error2 : $error2 +2) == 0)
-                {
+                if (($error2 = (count($record) == 1) ? $error2 : $error2 + 2) == 0) {
                     print(json_encode($record));
                 }
             }
@@ -74,34 +67,27 @@ if($error == 0)
     // === COURRIERS ======================================
 
     // --- courriers - list -------------------------------
-    if($context == "courriers")
-    {
+    if ($context == "courriers") {
         $cmd = (isset($URI[1])) ? $URI[1] : '';
-        if($cmd == 'liste')
-        {
-            $uid = (isset($URI[2])) ? $URI[2] +0 : 0;
-            if(($error2 = ($uid > 0) ? 0 : 1) == 0)
-            {
+        if ($cmd == 'liste') {
+            $uid = (isset($URI[2])) ? $URI[2] + 0 : 0;
+            if (($error2 = ($uid > 0) ? 0 : 1) == 0) {
                 $SQL = "SELECT `id`,`date_modification`,`date_envoi`,`prenom`,`nom`,`denomination`,`code_postal`,`localite`,`status` FROM `list_courriers` WHERE `utilisateur_id`=? AND `status` <> \"Supprimé\" ORDER BY `date_modification` DESC, `date_envoi` DESC;";
-                $records = $db->SQL($SQL, ['utilisateur_id'=>$uid]);
+                $records = $db->SQL($SQL, ['utilisateur_id' => $uid]);
                 print(json_encode($records));
             }
         }
     }
 
     // --- courriers - select 1 record --------------------
-    if($context == "courrier")
-    {
-        $uid = (isset($URI[1])) ? $URI[1] +0 : 0;
-        if(($error2 = ($uid > 0) ? 0 : 1) == 0)
-        {
-            $id = (isset($URI[2])) ? $URI[2] +0 : 0;
-            if(($error2 = ($id > 0) ? $error2 : $error2 +2) == 0)
-            {
-                $SQL = "SELECT `objet`, `offre`, `date_envoi`, `date_relance`, `paragraphe1`, `paragraphe2`, `paragraphe3`, `paragraphe4`, `nosref`, `vosref`, `annonce`, `destinataire_id`, `status` FROM courriers WHERE `utilisateur_id`=? AND `id`=? LIMIT 0,1;";  
-                $record = $db->SQL($SQL, ['utilisateur_id'=>$uid, 'id'=>$id]);
-                if(count($record) == 1)
-                {
+    if ($context == "courrier") {
+        $uid = (isset($URI[1])) ? $URI[1] + 0 : 0;
+        if (($error2 = ($uid > 0) ? 0 : 1) == 0) {
+            $id = (isset($URI[2])) ? $URI[2] + 0 : 0;
+            if (($error2 = ($id > 0) ? $error2 : $error2 + 2) == 0) {
+                $SQL = "SELECT `objet`, `offre`, `date_envoi`, `date_relance`, `paragraphe1`, `paragraphe2`, `paragraphe3`, `paragraphe4`, `nosref`, `vosref`, `annonce`, `destinataire_id`, `status` FROM courriers WHERE `utilisateur_id`=? AND `id`=? LIMIT 0,1;";
+                $record = $db->SQL($SQL, ['utilisateur_id' => $uid, 'id' => $id]);
+                if (count($record) == 1) {
                     print(json_encode($record));
                 }
             }
@@ -109,23 +95,18 @@ if($error == 0)
     }
 
     // --- courriers - select multiple records ------------
-    if($context == "courriers")
-    {
-        $uid = (isset($URI[1])) ? $URI[1] +0 : 0;
-        if(($error2 = ($uid > 0) ? $error2 : $error2 +1) == 0)
-        {
-            $ids = trim((isset($URI[2])) ? $URI[2] : '');            
-            if(($error2 = ($ids != '') ? $error2 : $error2 +2) == 0)
-            {
-                $ids = explode('-',$ids);
-                if(($error2 = (count($ids) > 0) ? $error2 : $error2 +4) == 0)
-                {
+    if ($context == "courriers") {
+        $uid = (isset($URI[1])) ? $URI[1] + 0 : 0;
+        if (($error2 = ($uid > 0) ? $error2 : $error2 + 1) == 0) {
+            $ids = trim((isset($URI[2])) ? $URI[2] : '');
+            if (($error2 = ($ids != '') ? $error2 : $error2 + 2) == 0) {
+                $ids = explode('-', $ids);
+                if (($error2 = (count($ids) > 0) ? $error2 : $error2 + 4) == 0) {
                     $records = [];
-                    foreach($ids as $id)
-                    {
+                    foreach ($ids as $id) {
                         $SQL = "SELECT `objet`, `offre`, `date_envoi`, `date_relance`, `paragraphe1`, `paragraphe2`, `paragraphe3`, `paragraphe4`, `nosref`, `vosref`, `annonce`, `destinataire_id`, `status` FROM courriers WHERE `id`=?;";
-                        $record = $db->SQL($SQL, ['id'=>$id]);
-                        array_push($records,$record[0]);
+                        $record = $db->SQL($SQL, ['id' => $id]);
+                        array_push($records, $record[0]);
                     }
                     print(json_encode($records));
                 }
@@ -133,19 +114,59 @@ if($error == 0)
         }
     }
 
-    // --- destinataire - select 1 record --------------------
-    if($context == "destinataire")
+    // --- inscription utilisateur------------
+
+    if ($context == "utilisateur" && count($URI) == 2) 
     {
-        $uid = (isset($URI[1])) ? $URI[1] +0 : 0;
-        if(($error2 = ($uid > 0) ? 0 : 1) == 0)
+        error_log($context);
+        if ($URI[1] == "inscription")
         {
-            $id = (isset($URI[2])) ? $URI[2] +0 : 0;
-            if(($error2 = ($id > 0) ? $error2 : $error2 +2) == 0)
-            {
+            error_log($URI[1]);
+
+            if (($error2 = (isset($_POST) ? 0 : 1) == 0)) {
+                $SET = $db->arrayToSQL($_POST);
+                $SQL = "INSERT INTO `utilisateurs` SET $SET;";
+                error_log($SQL);
+                $affected = $db->SQL($SQL, $_POST);
+            }
+            print(json_encode(['Nouvelle utilisateur' => $affected]));
+        }
+    }
+
+    // --- modififcation utilisateur------------
+
+    // if ($context == "utilisateur" && count($URI) == 4) 
+    // {
+    //     error_log($context);
+    //     if ($URI[1] == "modifier")
+    //     {
+            
+    //         if(($error2 = (ctype_digit($URI[2]) && ctype_digit($URI[3])) ? 0 : 1) == 0)
+    //         {
+    //             $uid = $URI[2];
+    //             $did = $URI[3];
+                
+    //             $SET = $db->arrayToSQL($_POST);
+    //             $sql = "UPDATE utilisateurs SET $SET WHERE id=? AND id=?;";
+
+    //             $return = $db->sql($sql,['utilisateur_id'=>$uid, 'id'=>$did]);
+    //         }
+    //         print(json_encode(['affected'=>$return]));
+    //     }
+    // }
+
+    // === DESTINATAIRES ======================================
+
+
+    // --- destinataire - select 1 record --------------------
+    if ($context == "destinataire") {
+        $uid = (isset($URI[1])) ? $URI[1] + 0 : 0;
+        if (($error2 = ($uid > 0) ? 0 : 1) == 0) {
+            $id = (isset($URI[2])) ? $URI[2] + 0 : 0;
+            if (($error2 = ($id > 0) ? $error2 : $error2 + 2) == 0) {
                 $SQL = "SELECT `titre`,`prenom`,`nom`,`fonction`,`denomination`,`adresse`, `code_postal`, `localite`, `telephone`, `email`, `commentaire` FROM destinataires WHERE `utilisateur_id`=? AND `id`=? LIMIT 0,1;";
-                $record = $db->SQL($SQL, ['utilisateur_id'=>$uid, 'id'=>$id]);
-                if(count($record) == 1)
-                {
+                $record = $db->SQL($SQL, ['utilisateur_id' => $uid, 'id' => $id]);
+                if (count($record) == 1) {
                     print(json_encode($record));
                 }
             }
@@ -153,24 +174,18 @@ if($error == 0)
     }
 
     // --- destinataires - select multiple records ------------
-    if($context == "destinataires")
-    {
-        $uid = (isset($URI[1])) ? $URI[1] +0 : 0;
-        if(($error2 = ($uid > 0) ? $error2 : $error2 +1) == 0)
-        {
-            $ids = trim((isset($URI[2])) ? $URI[2] : '');            
-            if(($error2 = ($ids != '') ? $error2 : $error2 +2) == 0)
-            {
-                $ids = explode('-',$ids);
-                if(($error2 = (count($ids) > 0) ? $error2 : $error2 +4) == 0)
-                {
+    if ($context == "destinataires") {
+        $uid = (isset($URI[1])) ? $URI[1] + 0 : 0;
+        if (($error2 = ($uid > 0) ? $error2 : $error2 + 1) == 0) {
+            $ids = trim((isset($URI[2])) ? $URI[2] : '');
+            if (($error2 = ($ids != '') ? $error2 : $error2 + 2) == 0) {
+                $ids = explode('-', $ids);
+                if (($error2 = (count($ids) > 0) ? $error2 : $error2 + 4) == 0) {
                     $records = [];
-                    foreach($ids as $id)
-                    {
-                        $SQL = "SELECT `objet`, `offre`, `date_envoi`, `date_relance`, `paragraphe1`, `paragraphe2`, `paragraphe3`, `paragraphe4`, `nosref`, `vosref`, `annonce`, `destinataire_id`, `status` FROM courriers WHERE `id`=?;";
+                    foreach ($ids as $id) {
                         $SQL = "SELECT `titre`,`prenom`,`nom`,`fonction`,`denomination`,`adresse`, `code_postal`, `localite`, `telephone`, `email`, `commentaire` FROM destinataires WHERE `id`=?";
-                        $record = $db->SQL($SQL, ['id'=>$id]);
-                        array_push($records,$record[0]);
+                        $record = $db->SQL($SQL, ['id' => $id]);
+                        array_push($records, $record[0]);
                     }
                     print(json_encode($records));
                 }
@@ -197,30 +212,7 @@ if($error == 0)
         }
     }
 
-
-
-
-
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
+    /*
     // --- courrier - add ---------------------------------
     if($_GET['context'] == "courrier" && $_GET['cmd'] == "add") 
     {
@@ -280,12 +272,6 @@ if($error == 0)
         print(json_encode(['affected'=>$affected]));
     }
 */
-    if($error2 > 0)
-    {
+    if ($error2 > 0) {
         //print(json_encode(['error2'=>$error2]));
-    }    
-// }
-// else
-// {
-//     print(json_encode(['error'=>$error]));
-// }
+
