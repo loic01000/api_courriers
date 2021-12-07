@@ -71,51 +71,168 @@ if($error == 0)
     }
 
     // --- courriers - select 1 record --------------------
-    if($context == "courrier")
+    if($context == "courrier" && count($URI) == 2)
     {
         $uid = (isset($URI[1])) ? $URI[1] +0 : 0;
-        if(($error2 = ($uid > 0) ? 0 : 1) == 0)
+        if(ctype_digit($URI[1])) 
         {
-            $id = (isset($URI[2])) ? $URI[2] +0 : 0;
-            if(($error2 = ($id > 0) ? $error2 : $error2 +2) == 0)
+            if(($error2 = ($uid > 0) ? 0 : 1) == 0)
             {
-                $SQL = "SELECT `objet`, `offre`, `date_envoi`, `date_relance`, `paragraphe1`, `paragraphe2`, `paragraphe3`, `paragraphe4`, `nosref`, `vosref`, `annonce`, `destinataire_id`, `status` FROM courriers WHERE `utilisateur_id`=? AND `id`=? LIMIT 0,1;";  
-                $record = $db->SQL($SQL, ['utilisateur_id'=>$uid, 'id'=>$id]);
-                if(count($record) == 1)
+                $id = (isset($URI[2])) ? $URI[2] +0 : 0;
+                if(($error2 = ($id > 0) ? $error2 : $error2 +2) == 0)
                 {
-                    print(json_encode($record));
+                    $SQL = "SELECT `objet`, `offre`, `date_envoi`, `date_relance`, `paragraphe1`, `paragraphe2`, `paragraphe3`, `paragraphe4`, `nosref`, `vosref`, `annonce`, `destinataire_id`, `status` FROM courriers WHERE `utilisateur_id`=? AND `id`=? LIMIT 0,1;";  
+                    $record = $db->SQL($SQL, ['utilisateur_id'=>$uid, 'id'=>$id]);
+                    if(count($record) == 1)
+                    {
+                        print(json_encode($record));
+                    }
+                }
+            }
+        }  
+    }
+
+    // --- courriers - select multiple records ------------
+    if($context == "courriers" && count($URI) == 3)
+    {
+        if(ctype_digit($URI[1]) && ctype_digit(str_replace("-", "", $URI[2])))
+        {
+            $uid = $URI[1];
+            if(($error2 = ($uid > 0) ? 0 : 1) == 0)
+            {
+                $ids = trim($URI[2]);            
+                if(($error2 = ($ids != '') ? $error2 : $error2 +1) == 0)
+                {
+                    $ids = explode('-',$ids);
+                    if(($error2 = (count($ids) > 0) ? $error2 : $error2 +2) == 0)
+                    {
+                        $records = [];
+                        foreach($ids as $id)
+                        {
+                            $SQL = "SELECT `objet`, `offre`, `date_envoi`, `date_relance`, `paragraphe1`, `paragraphe2`, `paragraphe3`, `paragraphe4`, `nosref`, `vosref`, `annonce`, `destinataire_id`, `status` FROM courriers WHERE `utilisateur_id`=? AND `id`=?;";
+                            $record = $db->SQL($SQL, ['utilisateur_id'=>$uid,'id'=>$id]);
+                            array_push($records,$record[0]);
+                        }
+                        print(json_encode($records));
+                    }
                 }
             }
         }
     }
 
-    // --- courriers - select multiple records ------------
+    // --- courrier - add ---------------------------------
+    if($context == "courrier") 
+    {
+        $cmd = (isset($URI[1])) ? $URI[1] : '';
+        if($cmd == 'ajouter')
+        {
+            $uid = (isset($URI[2])) ? $URI[2] +0 : 0;
+            if(($error2 = ($uid > 0) ? 0 : 1) == 0)
+            {  
+                $_POST = [];
+                $_POST["destinataire_id"] = 2112;           
+                $_POST["objet"] = "objet";
+                $_POST["paragraphe1"] = "paragraphe1";
+                $_POST["paragraphe2"] = "paragraphe2";
+                $_POST["paragraphe3"] = "paragraphe3";
+                $_POST["paragraphe4"] = "paragraphe4";
+                $_POST["status"] = "Brouillon";
+
+                $date = date('Y-m-d');
+                $_POST["date_creation"] = $date;
+                $_POST["date_modification"] = $date;
+                // $_POST["date_relance"] = ($_POST["date_relance"]=="") ? "NULL" : $_POST["date_relance"];
+                // $_POST["date_envoi"] = ($_POST["date_envoi"]=="") ? "NULL" : $_POST["date_envoi"];
+                $_POST["date_relance"] = "NULL";
+                $_POST["date_envoi"] =  "NULL";
+
+                $_POST["utilisateur_id"] = $uid;
+
+                $SET = $db->arrayToSQL($_POST);
+                $SET = str_replace("\"NULL\"","NULL",$SET);
+                $SQL ="INSERT INTO `courriers` SET $SET , `utilisateur_id` = ?;";  
+                print(json_encode($_POST));
+                $affected = $db->SQL($SQL, $_POST);
+                print(json_encode(['Affectés'=>$affected]));
+            }
+        }
+    }
+
+    // --- courrier - update ------------------------------
+    if($context == "courrier") 
+    {
+        $cmd = (isset($URI[1])) ? $URI[1] : '';
+        if($cmd == 'modifier')
+        {
+            $id = (isset($URI[2])) ? $URI[2] +0 : 0;
+            if(($error2 = ($id > 0) ? 0 : 1) == 0)
+            {
+                // if($_SERVER['REQUEST_METHOD'] === "PUT")
+                // {
+                //     parse_str(file_get_contents('php://input', false , null, -1 , $_SERVER['CONTENT_LENGTH'] ), $_PUT);
+                // }
+                // else
+                // {
+                //     $_PUT=array();
+                // }
+
+                $_POST["date_envoi"] = ($_POST["date_envoi"]=="") ? "NULL" : $_POST["date_envoi"];
+                $_POST["date_relance"] = ($_POST["date_relance"]=="") ? "NULL" : $_POST["date_relance"];
+                $_POST['id'] = $id;
+                $SET = $db->arrayToSQL($_POST);
+                $SET = str_replace("\"NULL\"","NULL",$SET);
+                $SQL = "UPDATE `courriers` SET $SET WHERE `id`=?;"; 
+                $affected = $db->SQL($SQL, $_POST);
+                print(json_encode(['affected'=>$affected]));
+            }
+        }
+        
+    }
+
+    // --- courrier - delete 1 ----------------------------
+    if($context == "courrier") 
+    {
+        $cmd = (isset($URI[1])) ? $URI[1] : '';
+        if($cmd == 'supprimer')
+        {
+            $id = (isset($URI[2])) ? $URI[2] +0 : 0;
+            if(($error2 = ($id > 0) ? 0 : 1) == 0)
+            {
+                $SQL = "DELETE FROM `courriers` WHERE `id`=?;"; 
+                $affected = $db->SQL($SQL, ['id' => $id]);
+                print(json_encode(['affected'=>$affected]));
+            }
+        }
+    }
+        
+    // --- courriers - delete multiple records ------------
     if($context == "courriers")
     {
-        $uid = (isset($URI[1])) ? $URI[1] +0 : 0;
-        if(($error2 = ($uid > 0) ? $error2 : $error2 +1) == 0)
+        $cmd = (isset($URI[1])) ? $URI[1] : '';
+        if($cmd == 'supprimer')
         {
-            $ids = trim((isset($URI[2])) ? $URI[2] : '');            
-            if(($error2 = ($ids != '') ? $error2 : $error2 +2) == 0)
+            if(ctype_digit(str_replace("-", "", $URI[2])))
             {
-                $ids = explode('-',$ids);
-                if(($error2 = (count($ids) > 0) ? $error2 : $error2 +4) == 0)
+                $ids = trim((isset($URI[2])) ? $URI[2] : '');            
+                if(($error2 = ($ids != '') ? 0 : 1) == 0)
                 {
-                    $records = [];
-                    foreach($ids as $id)
+                    $ids = explode('-',$ids);
+                    if(($error2 = (count($ids) > 0) ? $error2 : $error2 +2) == 0)
                     {
-                        $SQL = "SELECT `objet`, `offre`, `date_envoi`, `date_relance`, `paragraphe1`, `paragraphe2`, `paragraphe3`, `paragraphe4`, `nosref`, `vosref`, `annonce`, `destinataire_id`, `status` FROM courriers WHERE `id`=?;";
-                        $record = $db->SQL($SQL, ['id'=>$id]);
-                        array_push($records,$record[0]);
+                        $affected = 0;
+                        foreach($ids as $id)
+                        {
+                            $SQL = "DELETE FROM `courriers` WHERE `id`=?;"; 
+                            $affected += $db->SQL($SQL, ['id' => $id]);
+                        }
+                        print(json_encode(['affected'=>$affected]));
                     }
-                    print(json_encode($records));
                 }
             }
         }
     }
 
     // === DESTINATAIRES ======================================
-
 
     // --- destinataire - select 1 record --------------------
     if($context == "destinataire")
@@ -151,6 +268,7 @@ if($error == 0)
                     $records = [];
                     foreach($ids as $id)
                     {
+                        $SQL = "SELECT `objet`, `offre`, `date_envoi`, `date_relance`, `paragraphe1`, `paragraphe2`, `paragraphe3`, `paragraphe4`, `nosref`, `vosref`, `annonce`, `destinataire_id`, `status` FROM courriers WHERE `id`=?;";
                         $SQL = "SELECT `titre`,`prenom`,`nom`,`fonction`,`denomination`,`adresse`, `code_postal`, `localite`, `telephone`, `email`, `commentaire` FROM destinataires WHERE `id`=?";
                         $record = $db->SQL($SQL, ['id'=>$id]);
                         array_push($records,$record[0]);
@@ -161,72 +279,6 @@ if($error == 0)
         }
     }
 
-
-
-
-
-
-
-/*
-    // --- courrier - add ---------------------------------
-    if($_GET['context'] == "courrier" && $_GET['cmd'] == "add") 
-    {
-        $error2 = 0;
-        $date = date('Y-m-d');
-        $_POST["date_creation"] = $date;
-        $_POST["date_modification"] = $date;
-        $_POST["date_relance"] = ($_POST["date_relance"]=="") ? "NULL" : $_POST["date_relance"];
-        $_POST["date_envoi"] = ($_POST["date_envoi"]=="") ? "NULL" : $_POST["date_envoi"];
-        $SET = $db->arrayToSQL($_POST);
-        $SET = str_replace("\"NULL\"","NULL",$SET);
-        $SQL ="INSERT INTO `courriers` SET $SET , `utilisateur_id` = {$_SESSION['uid']};";  
-        $affected = $db->SQL($SQL, $_POST);
-        print(json_encode(['Affectés'=>$affected]));
-    }
-
-    // --- courrier - update ------------------------------
-    if($_GET['context'] == "courrier" && $_GET['cmd'] == "update") 
-    {
-
-        if($_SERVER['REQUEST_METHOD'] === "PUT")
-        {
-            parse_str(file_get_contents('php://input', false , null, -1 , $_SERVER['CONTENT_LENGTH'] ), $_PUT);
-        }
-        else
-        {
-            $_PUT=array();
-        }
-
-        $error2 = 0;
-        $_POST["date_envoi"] = ($_POST["date_envoi"]=="") ? "NULL" : $_POST["date_envoi"];
-        $_POST["date_relance"] = ($_POST["date_relance"]=="") ? "NULL" : $_POST["date_relance"];
-        $SET= $db->arrayToSQL($_POST);
-        $SET = str_replace("\"NULL\"","NULL",$SET);
-        $SQL = "UPDATE `courriers` SET $SET WHERE `id`=?;"; 
-        $affected = $db->SQL($SQL, $_POST);
-        print(json_encode(['affected'=>$affected]));
-    }
-
-    // --- courrier - delete 1 ----------------------------
-    if($_GET['context'] == "courrier" && $_GET['cmd'] == "delete") 
-    {
-        $error2 = 0;
-        $SQL = "DELETE FROM `courriers` WHERE `id`=?;"; 
-        $affected = $db->SQL($SQL, $_POST);
-        print(json_encode(['affected'=>$affected]));
-    }
-
-    // --- courriers - delete multiple records ------------
-    if($_GET['context'] == "courrier" && $_GET['cmd'] == "delete") 
-    {
-        $error2 = 0;
-        $error2 = (isset($_POST['ids'])) ? $error2 : $error2+1; 
-        $WHERE = $db->arrayToSQL($_POST,' OR ');
-        $SQL = "DELETE FROM `courriers` WHERE $WHERE;"; 
-        $affected = $db->SQL($SQL, $_POST);
-        print(json_encode(['affected'=>$affected]));
-    }
-*/
     if($error2 > 0)
     {
         //print(json_encode(['error2'=>$error2]));
