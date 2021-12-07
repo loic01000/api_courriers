@@ -114,6 +114,9 @@ if($error == 0)
         }
     }
 
+    // === DESTINATAIRES ======================================
+
+
     // --- destinataire - select 1 record --------------------
     if($context == "destinataire")
     {
@@ -148,13 +151,31 @@ if($error == 0)
                     $records = [];
                     foreach($ids as $id)
                     {
-                        $SQL = "SELECT `objet`, `offre`, `date_envoi`, `date_relance`, `paragraphe1`, `paragraphe2`, `paragraphe3`, `paragraphe4`, `nosref`, `vosref`, `annonce`, `destinataire_id`, `status` FROM courriers WHERE `id`=?;";
                         $SQL = "SELECT `titre`,`prenom`,`nom`,`fonction`,`denomination`,`adresse`, `code_postal`, `localite`, `telephone`, `email`, `commentaire` FROM destinataires WHERE `id`=?";
                         $record = $db->SQL($SQL, ['id'=>$id]);
                         array_push($records,$record[0]);
                     }
                     print(json_encode($records));
                 }
+            }
+        }
+    }
+
+    
+    // --- Destinataires - list -------------------------------
+    if($context == "destinataires")
+    {
+        $cmd = (isset($URI[1])) ? $URI[1] : '';
+        if($cmd == 'liste')
+        {
+            $uid = (isset($URI[2])) ? $URI[2] +0 : 0;
+            if(($error2 = ($uid > 0) ? 0 : 1) == 0)
+            {
+                $SQL = "SELECT `id`,`date_modification`,`date_envoi`,`prenom`,`nom`,`denomination`,`code_postal`,`localite`,`status` FROM `list_courriers` WHERE `utilisateur_id`=? AND `status` <> \"Supprimé\" ORDER BY `date_modification` DESC, `date_envoi` DESC;";
+                //$SQL = "SELECT `id`,`titre`,`prenom`,`nom`,`fonction`,`denomination`,`localite` FROM `destinataires` WHERE `utilisateur_id` = $uid AND `status` IS NULL ;");
+
+                $records = $db->SQL($SQL, ['utilisateur_id'=>$uid]);
+                print(json_encode($records));
             }
         }
     }
