@@ -52,6 +52,7 @@ if($error == 0)
         }
     }
 
+
     // === COURRIERS ======================================
 
     // --- courriers - list -------------------------------
@@ -159,7 +160,25 @@ if($error == 0)
         }
     }
 
+    // --- destinataires - supprimer - 1 ------------
 
+    if($context == "destinataire" && count($URI) == 4)
+    {
+        if ($URI[1] == "supprimer") 
+            {
+                
+                if(($error2 = (ctype_digit($URI[2]) && ctype_digit($URI[3])) ? 0 : 1) == 0)
+                {
+                    $uid = $URI[2];
+                    $did = $URI[3];
+
+                    $sql= "UPDATE `destinataires` SET `status`= \"Supprimé\" WHERE `utilisateur_id`=? AND `id`=?;";
+                    $return = $db->sql($sql,['utilisateur_id'=>$uid, 'id'=>$did]);
+                    print(json_encode(['affected'=>$return]));               
+                }
+            }
+        }
+    }
 
 
 
