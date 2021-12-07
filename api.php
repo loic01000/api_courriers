@@ -52,6 +52,7 @@ if($error == 0)
         }
     }
 
+
     // === COURRIERS ======================================
 
     // --- courriers - list -------------------------------
@@ -180,23 +181,43 @@ if($error == 0)
     }
 
     // --- destinataire - modifier --------------------
-    if($context == "destinataire")
+    if($context == "destinataire" && count($URI) == 4)
     {
-        $cmd = (isset($URI[1])) ? $URI[1] : '';
-        if($cmd == 'modifier')
-        {
-            error
-            $uid = (isset($URI[2])) ? $URI[2] +0 : 0;
-            if(($error2 = ($uid > 0) ? 0 : 1) == 0)
+        if ($URI[1] == "modifier") 
             {
-                $SQL = "UPDATE `destinataires` SET `titre`,`prenom`,`nom`,`fonction`,`denomination`,`localite` WHERE `id`=$id;";
+                
+                if(($error2 = (ctype_digit($URI[2]) && ctype_digit($URI[3])) ? 0 : 1) == 0)
+                {
+                    error_log("test=======================");
+                    $uid = $URI[2];
+                    $did = $URI[3];
 
-                $records = $db->SQL($SQL, ['utilisateur_id'=>$uid]);
-                print(json_encode($records));
+                $sql = "UPDATE `destinataires` SET `prenom`,`nom`,`fonction`,`denomination`,`localite` WHERE `utilisateur_id`=? AND `id`=?;";
+                $return = $db->sql($sql,['utilisateur_id'=>$uid, 'id'=>$did]);
+                print(json_encode(['affected'=>$return]));
             }
         }
     }
 
+    // --- destinataires - supprimer - 1 ------------
+
+    if($context == "destinataire" && count($URI) == 4)
+    {
+        if ($URI[1] == "supprimer") 
+            {
+                
+                if(($error2 = (ctype_digit($URI[2]) && ctype_digit($URI[3])) ? 0 : 1) == 0)
+                {
+                    $uid = $URI[2];
+                    $did = $URI[3];
+
+                    $sql= "UPDATE `destinataires` SET `status`= \"Supprimé\" WHERE `utilisateur_id`=? AND `id`=?;";
+                    $return = $db->sql($sql,['utilisateur_id'=>$uid, 'id'=>$did]);
+                    print(json_encode(['affected'=>$return]));               
+                }
+            }
+    }
+    
 
 
 
