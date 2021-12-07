@@ -74,6 +74,7 @@ if($error == 0)
     if($context == "courrier")
     {
         $uid = (isset($URI[1])) ? $URI[1] +0 : 0;
+        
         if(($error2 = ($uid > 0) ? 0 : 1) == 0)
         {
             $id = (isset($URI[2])) ? $URI[2] +0 : 0;
@@ -116,6 +117,22 @@ if($error == 0)
 
     // === DESTINATAIRES ======================================
 
+    // --- destinataires - list -------------------------------
+    if($context == "destinataires")
+    {
+        $cmd = (isset($URI[1])) ? $URI[1] : '';
+        if($cmd == 'liste')
+        {
+            $uid = (isset($URI[2])) ? $URI[2] +0 : 0;
+            if(($error2 = ($uid > 0) ? 0 : 1) == 0)
+            {
+                $SQL = "SELECT `id`,`titre`,`prenom`,`nom`,`fonction`,`denomination`,`localite` FROM `destinataires` WHERE `utilisateur_id` = ? AND `status` IS NULL ;";
+
+                $records = $db->SQL($SQL, ['utilisateur_id'=>$uid]);
+                print(json_encode($records));
+            }
+        }
+    }
 
     // --- destinataire - select 1 record --------------------
     if($context == "destinataire")
@@ -126,6 +143,7 @@ if($error == 0)
             $id = (isset($URI[2])) ? $URI[2] +0 : 0;
             if(($error2 = ($id > 0) ? $error2 : $error2 +2) == 0)
             {
+                errorç("ok");
                 $SQL = "SELECT `titre`,`prenom`,`nom`,`fonction`,`denomination`,`adresse`, `code_postal`, `localite`, `telephone`, `email`, `commentaire` FROM destinataires WHERE `utilisateur_id`=? AND `id`=? LIMIT 0,1;";
                 $record = $db->SQL($SQL, ['utilisateur_id'=>$uid, 'id'=>$id]);
                 if(count($record) == 1)
@@ -161,6 +179,23 @@ if($error == 0)
         }
     }
 
+    // --- destinataire - modifier --------------------
+    if($context == "destinataire")
+    {
+        $cmd = (isset($URI[1])) ? $URI[1] : '';
+        if($cmd == 'modifier')
+        {
+            error
+            $uid = (isset($URI[2])) ? $URI[2] +0 : 0;
+            if(($error2 = ($uid > 0) ? 0 : 1) == 0)
+            {
+                $SQL = "UPDATE `destinataires` SET `titre`,`prenom`,`nom`,`fonction`,`denomination`,`localite` WHERE `id`=$id;";
+
+                $records = $db->SQL($SQL, ['utilisateur_id'=>$uid]);
+                print(json_encode($records));
+            }
+        }
+    }
 
 
 
