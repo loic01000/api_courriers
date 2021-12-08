@@ -185,8 +185,7 @@ if($error == 0)
                 $affected = $db->SQL($SQL, $_POST);
                 print(json_encode(['affected'=>$affected]));
             }
-        }
-        
+        } 
     }
 
     // --- courrier - delete 1 ----------------------------
