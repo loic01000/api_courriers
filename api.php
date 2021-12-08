@@ -50,7 +50,7 @@ if ($error == 0)
 
     if($context == "utilisateur" && count($URI) == 3)
     {
-        print('test');
+        // print("test\n");
         if ($URI[1] == "desinscription") 
         {
             if(($error2 = (ctype_digit($URI[2])) ? 0 : 1) == 0)
@@ -143,32 +143,33 @@ if ($error == 0)
                 $SQL = "INSERT INTO `utilisateurs` SET $SET;";
                 error_log($SQL);
                 $affected = $db->SQL($SQL, $_POST);
+                print(json_encode(['Nouvelle utilisateur' => $affected]));
             }
-            print(json_encode(['Nouvelle utilisateur' => $affected]));
         }
     }
 
     // --- modififcation utilisateur------------
 
-    // if ($context == "utilisateur" && count($URI) == 4) 
-    // {
-    //     error_log($context);
-    //     if ($URI[1] == "modifier")
-    //     {
-            
-    //         if(($error2 = (ctype_digit($URI[2]) && ctype_digit($URI[3])) ? 0 : 1) == 0)
-    //         {
-    //             $uid = $URI[2];
-    //             $did = $URI[3];
+    if ($context == "utilisateur" && count($URI) == 3) 
+    {
+        error_log($context);
+        if ($URI[1] == "modifier")
+        {
+            if(($error2 = (ctype_digit($URI[2])) ? 0 : 1) == 0)
+            {
+                $_POST['identifiant']= 'marco';
                 
-    //             $SET = $db->arrayToSQL($_POST);
-    //             $sql = "UPDATE utilisateurs SET $SET WHERE id=? AND id=?;";
-
-    //             $return = $db->sql($sql,['utilisateur_id'=>$uid, 'id'=>$did]);
-    //         }
-    //         print(json_encode(['affected'=>$return]));
-    //     }
-    // }
+                $uid = $URI[2];
+                
+                $SET = $db->arrayToSQL($_POST);
+                $_POST['id']= $uid;
+                
+                $sql = "UPDATE utilisateurs SET $SET WHERE `id`=? ;";
+                $return = $db->sql($sql,$_POST);
+                print(json_encode(['affected'=>$return]));
+            }
+        }
+    }
 
     // === DESTINATAIRES ======================================
 
@@ -435,25 +436,24 @@ if ($error == 0)
 
     // --- modififcation utilisateur------------
 
-    // if ($context == "utilisateur" && count($URI) == 4) 
-    // {
-    //     error_log($context);
-    //     if ($URI[1] == "modifier")
-    //     {
-            
-    //         if(($error2 = (ctype_digit($URI[2]) && ctype_digit($URI[3])) ? 0 : 1) == 0)
-    //         {
-    //             $uid = $URI[2];
-    //             $did = $URI[3];
-                
-    //             $SET = $db->arrayToSQL($_POST);
-    //             $sql = "UPDATE utilisateurs SET $SET WHERE id=? AND id=?;";
-
-    //             $return = $db->sql($sql,['utilisateur_id'=>$uid, 'id'=>$did]);
-    //         }
-    //         print(json_encode(['affected'=>$return]));
-    //     }
-    // }
+    if ($context == "utilisateur" && count($URI) == 4) 
+    {
+        error_log($context);
+        if ($URI[1] == "modifier")
+        {
+           
+            if(($error2 = (ctype_digit($URI[2]) && ctype_digit($URI[3])) ? 0 : 1) == 0)
+            {
+                $uid = $URI[2];
+                $did = $URI[3];
+               
+                $SET = $db->arrayToSQL($_POST);
+                $sql = "UPDATE utilisateurs SET $SET WHERE id=? AND id=?;";
+                $return = $db->sql($sql,['utilisateur_id'=>$uid, 'id'=>$did]);
+            }
+            print(json_encode(['affected'=>$return]));
+        }
+    }
 
     // === DESTINATAIRES ======================================
 
