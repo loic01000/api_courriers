@@ -1,5 +1,5 @@
 <?php
-error_log('mysq.php');
+error_log('mysql.php');
 
 define('DBHOST', 'mysql.xiong.fr');
 define('DBPORT', '3306');
